@@ -1,0 +1,856 @@
+﻿@{
+    ViewBag.Title = "Presencia Minorista";
+    Layout = null;
+}
+<link href="@Url.Content("~/Content/kendo.common.min.css")" rel="stylesheet" type="text/css" />
+<link href="@Url.Content("~/Content/kendo.default.min.css")" rel="stylesheet" type="text/css" />
+@*<script src="@Url.Content("~/Scripts/jquery.min.js")" type="text/javascript"></script>*@
+<script src="@Url.Content("~/Scripts/jquery-1.7.1.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery-ui-1.8.11.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.blockUI.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/kendo.web.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/cultures/kendo.culture.es-PE.min.js")" type="text/javascript"></script>
+<style>
+    .k-grid-content > table > tbody > tr
+    {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        color: #666666;
+    }
+    .Cabecera
+    {
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: bold;
+        font-size: 11px;
+        color: #006699;
+    }
+    .Detalle
+    {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        color: #666666;
+    }
+    .Combos
+    {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 13px;
+    }
+    
+    .button
+    {
+        border-top: 1px solid #96d1f8;
+        background: #65a9d7;
+        background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));
+        background: -webkit-linear-gradient(top, #3e779d, #65a9d7);
+        background: -moz-linear-gradient(top, #3e779d, #65a9d7);
+        background: -ms-linear-gradient(top, #3e779d, #65a9d7);
+        background: -o-linear-gradient(top, #3e779d, #65a9d7);
+        padding: 9.5px 19px;
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+        -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+        -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+        box-shadow: rgba(0,0,0,1) 0 1px 0;
+        text-shadow: rgba(0,0,0,.4) 0 1px 0;
+        color: white;
+        font-size: 13px;
+        font-family: Helvetica, Arial, Sans-Serif;
+        text-decoration: none;
+        vertical-align: middle;
+    }
+    .button:hover
+    {
+        border-top-color: #28597a;
+        background: #28597a;
+        color: #ccc;
+    }
+    .button:active
+    {
+        border-top-color: #1b435e;
+        background: #1b435e;
+    }
+</style>
+<script language="javascript">
+
+    $(function () {
+        //        var fechaHoy = '@ViewBag.fechaDia';
+        //        var fecha = fechaHoy.split('/');
+
+        $("#fechaInicio").kendoDateTimePicker({
+            culture: "es-PE"
+            //            max:new Date(parseInt(fecha[2],10), parseInt(fecha[1]-1,10),parseInt(fecha[0],10)),
+            //            change: function(e) {
+            //                var dateInicio = $("#fechaInicio").data("kendoDateTimePicker");
+            //                var dateFin = $("#fechaFin").data("kendoDateTimePicker");
+            //                var fechaminima = dateInicio.value();
+            //                dateFin.min(new Date(fechaminima));
+            //            }
+        });
+
+        $("#fechaFin").kendoDateTimePicker({
+            culture: "es-PE"
+            //max: new Date(parseInt(fecha[2], 10), parseInt(fecha[1] - 1, 10), parseInt(fecha[0], 10))
+        });
+
+        //Filtros
+        function filterCampania() {
+            return {
+                idcanal: $("#canal").val(),
+                idcompania: '1561'
+            };
+        }
+        function filterxCampania() {
+            return {
+                idcampania: $("#campania").val()
+            };
+        }
+
+        function filterCiudad() {
+            return {
+                CodCompania: '@ViewBag.idcompania'
+            }
+        }
+        function filterMercaderista() {
+            return {
+                idcampania: $("#campania").val(),
+                idsupervisor: $("#supervisor").val()
+            }
+        }
+        function filterMercado() {
+            var campania = $("#campania").val();
+            if (campania == "") campania = "0";
+            var ciudad = $("#ciudad").val();
+            if (ciudad == "") ciudad = "0";
+            return {
+                idcampania: campania,
+                idCiudad: ciudad
+            }
+        }
+        function filterPdv() {
+            var campania = $("#campania").val();
+            if (campania == "") campania = "0";
+            var mercado2 = $("#mercado").val();
+            if (mercado2 == "") mercado2 = "0";
+            return {
+                idcampania: campania,
+                idMercado: mercado2
+            }
+        }
+        function filterSubReporte() {
+            return {
+                idreporte: '58',
+                idcompania: '1561',
+                idcanal: $("#canal").val()
+            };
+        }
+        var data = [
+                        { Text: "MINORISTA", Value: "1023" }
+                    ];
+        $("#canal").kendoDropDownList({
+            //placeholder: "--Seleccione Canal--",
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: data,
+            suggest: true
+        });
+
+        var campania = $("#campania").kendoComboBox({
+            autoBind: false,
+            cascadeFrom: "canal",
+            placeholder: "-- Seleccione Campaña --",
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                type: "json",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "/Home/ListarCampaniaxCanal_Compania",
+                        data: filterCampania
+                    }
+                }
+            },
+            change: function (e) {
+//                DSPDV = new kendo.data.DataSource({
+//                    transport: {
+//                        read: {
+//                            url: "/Home/ListarPDVPorCampaniaxCiudad",
+//                            data: filterMercado
+//                        }
+//                    },
+//                    schema: {
+//                        model: {
+//                            fields: {
+//                                Text: { type: "string" },
+//                                Value: { type: "string" }
+//                            }
+//                        }
+//                    }
+//                });
+//                $("#mercado").data("kendoComboBox").value(null);
+//                $("#mercado").kendoComboBox({
+//                    dataTextField: "Text",
+//                    dataValueField: "Value",
+//                    dataSource: DSPDV
+//                });
+//                $("#mercado").data("kendoComboBox").enable();
+            },
+            filter: "contains"
+        }).data("kendoComboBox");
+
+
+        var ciudad = $("#ciudad").kendoComboBox({
+            autoBind: false,
+            cascadeFrom: "campania",
+            placeholder: "-- Todos --",
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                type: "json",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "/Home/Listar_Oficina_Por_Compania",
+                        data: filterCiudad
+                    }
+                }
+            },
+            change: function (e) {
+//                DSPDV = new kendo.data.DataSource({
+//                    transport: {
+//                        read: {
+//                            url: "/Home/ListarPDVPorCampaniaxCiudad",
+//                            data: filterMercado
+//                        }
+//                    },
+//                    schema: {
+//                        model: {
+//                            fields: {
+//                                Text: { type: "string" },
+//                                Value: { type: "string" }
+//                            }
+//                        }
+//                    }
+//                });
+//                $("#mercado").data("kendoComboBox").value(null);
+//                $("#mercado").kendoComboBox({
+//                    dataTextField: "Text",
+//                    dataValueField: "Value",
+//                    dataSource: DSPDV
+//                });
+//                $("#mercado").data("kendoComboBox").enable();
+            },
+            filter: "contains"
+        }).data("kendoComboBox");
+
+        var mercado = $("#mercado").kendoComboBox({
+            autoBind: false,
+            cascadeFrom: "ciudad",
+            placeholder: "-- Todos --",
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                type: "json",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "/Home/ListarPDVPorCampaniaxCiudad",
+                        data: filterMercado
+                    }
+                }
+            },
+            change: function (e) {
+//                DSPDV = new kendo.data.DataSource({
+//                    transport: {
+//                        read: {
+//                            url: "/Home/ListarPDVxCampaniaxCadena",
+//                            data: filterPdv
+//                        }
+//                    },
+//                    schema: {
+//                        model: {
+//                            fields: {
+//                                Text: { type: "string" },
+//                                Value: { type: "string" }
+//                            }
+//                        }
+//                    }
+//                });
+//                $("#clientepdv").data("kendoComboBox").value(null);
+//                $("#clientepdv").kendoComboBox({
+//                    dataTextField: "Text",
+//                    dataValueField: "Value",
+//                    dataSource: DSPDV
+//                });
+//                $("#clientepdv").data("kendoComboBox").enable();
+            }
+
+        }).data("kendoComboBox");
+
+        var clientepdv = $("#clientepdv").kendoComboBox({
+            autoBind: false,
+            cascadeFrom: "mercado",
+            placeholder: "-- Todos --",
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                type: "json",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "/Home/ListarPDVxCampaniaxCadena",
+                        data: filterPdv
+                    }
+                }
+            },
+            filter: "contains"
+        }).data("kendoComboBox");
+
+        var supervisor = $("#supervisor").kendoComboBox({
+            autoBind: false,
+            cascadeFrom: "campania",
+            placeholder: "--Todos--",
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                type: "json",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "/Home/ListarSupervisores",
+                        data: filterxCampania
+                    }
+                }
+            },
+            filter: "contains"
+        }).data("kendoComboBox");
+
+        var gie = $("#mercaderista").kendoComboBox({
+            autoBind: false,
+            cascadeFrom: "supervisor",
+            placeholder: "--Todos--",
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                type: "json",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "/Home/ListarMercaderistas",
+                        data: filterMercaderista
+                    }
+                }
+            },
+            filter: "contains"
+        }).data("kendoComboBox");
+
+        var subreporte = $("#subreporte").kendoComboBox({
+            autoBind: false,
+            cascadeFrom: "canal",
+            placeholder: "--Todos--",
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                type: "json",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "/Home/ListarSubReporte",
+                        data: filterSubReporte
+                    }
+                }
+            },
+            filter: "contains"
+        }).data("kendoComboBox");
+
+        $("#buscar").unbind("click").click(function (event) {
+            event.preventDefault();
+            $("#grid").text("");
+            ValidarDatos();
+        });
+
+                    // exportar 
+            $("#exportar").unbind("click").click(function (event) {
+                event.preventDefault();
+                var CodPersona = $("#mercaderista").val(); if (CodPersona == "") CodPersona = "0";
+                var CodCampania = $("#campania").val(); if (CodCampania == "") CodCampania = "0";
+                var CodCanal = $("#canal").val(); if (CodCanal == "") CodCanal = "0";
+                var CodOficina = $("#ciudad").val(); if (CodOficina == "") CodOficina = "0";
+                var CodNodoComercial = $("#mercado").val(); if (CodNodoComercial == "") CodNodoComercial = "0";
+                var ClientePDV = $("#clientepdv").val(); if (ClientePDV == "") ClientePDV = "0";
+                var CodSupervisor = $("#supervisor").val(); if (CodSupervisor == "") CodSupervisor = "0";
+                var subreporte = $("#subreporte").val(); if (subreporte == "") subreporte = "0";
+                var f_incio = $("#fechaInicio").val(); if (f_incio == "") f_incio = "0";
+                var f_fin = $("#fechaFin").val(); if (f_fin == "") f_fin = "0";
+                if (f_incio == "0") {
+                    alert("Debe elegir Fecha de Inicio");
+                    return false;
+                }
+                if (f_fin == "0") {
+                    alert("Debe elegir Fecha Fin");
+                    return false;
+                }
+                if (CodCampania == "0") {
+                    alert("Debe elegir Campaña");
+                    return false;
+                }
+
+                ////// FIN DE VALIDACION //////////////
+
+                var tjson = JSON.stringify({
+                    CodCampania: CodCampania,
+                    CodCanal: CodCanal,
+                    CodOficina: CodOficina,
+                    CodNodoComercial: CodNodoComercial,
+                    CodigoPDV: ClientePDV,
+                    CodPersona: CodPersona,
+                    CodSupervisor: CodSupervisor,
+                    CodTipoReporte: subreporte,
+                    f_incio: f_incio,
+                    f_fin: f_fin,
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    beforeSend: function () {
+                        $.blockUI({ message: $('#divMessage') });
+                    },
+                    cache: false,
+                    url: '@Url.Action("generarExcelPresencia_Minorista", "Presencia")',
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: tjson,
+                    success: function (data) {
+                        if (data == 0) {
+                            alert("No existen datos para Exportar")
+                            $.unblockUI();
+                        }
+                        else {
+                            $.blockUI({ message: $('#divDescargaExcel') });
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        $.unblockUI();
+                    }
+                });
+            }); //fin exportar
+    });
+
+    function timeEditor(container, options) {
+        $('<input name="' + options.field + '"/>')
+            .appendTo(container)
+            .kendoDateTimePicker({
+                culture: "es-PE",
+                format: "dd/MM/yyyy hh:mm tt",
+                timeFormat: "hh:mm tt"
+            });
+    }
+    var viewModel = kendo.observable({
+        isChecked: false
+    });
+
+    kendo.bind($("input"), viewModel);
+
+    function ValidarDatos() {
+
+        $(function () {
+            var CodPersona = $("#mercaderista").val(); if (CodPersona == "") CodPersona = "0";
+            var CodCampania = $("#campania").val(); if (CodCampania == "") CodCampania = "0";
+            var CodCanal = $("#canal").val(); if (CodCanal == "") CodCanal = "0";
+            var CodOficina = $("#ciudad").val(); if (CodOficina == "") CodOficina = "0";
+            var CodNodoComercial = $("#mercado").val(); if (CodNodoComercial == "") CodNodoComercial = "0";
+            var ClientePDV = $("#clientepdv").val(); if (ClientePDV == "") ClientePDV = "0";
+            var CodSupervisor = $("#supervisor").val(); if (CodSupervisor == "") CodSupervisor = "0";
+            var subreporte = $("#subreporte").val(); if (subreporte == "") subreporte = "0";
+            var f_incio = $("#fechaInicio").val(); if (f_incio == "") f_incio = "0";
+            var f_fin = $("#fechaFin").val(); if (f_fin == "") f_fin = "0";
+
+            if (f_incio == "0") {
+                alert("Debe elegir Fecha de Inicio");
+                return false;
+            }
+            if (f_fin == "0") {
+                alert("Debe elegir Fecha Fin");
+                return false;
+            }
+            if (CodCampania == "0") {
+                alert("Debe elegir Campaña");
+                return false;
+            }
+            ///////////////////////////////////////////////////////////////
+            //Validando Columnas que se mostraran y ocultaran
+            var ObsBool = false; var CommentBool = false; var visibilidadBool = false; var productBool = false; var stockBool = false;
+            if (subreporte == "04" || subreporte == "05") {//Cluster
+                ObsBool = true;
+                CommentBool = true;
+                visibilidadBool = true;
+                productBool = false;
+                stockBool = true;
+            }
+            if (subreporte == "03" || subreporte == "06") {//Visibilidad
+                ObsBool = true;
+                CommentBool = true;
+                visibilidadBool = false;
+                productBool = true;
+                stockBool = true;
+            }
+            if (subreporte == "07") {//Observaciones
+                ObsBool = false;
+                CommentBool = true;
+                visibilidadBool = true;
+                productBool = true;
+                stockBool = true;
+            }
+            if (subreporte == "13" || subreporte == "14") {//Pres Colgate y Competencia
+                ObsBool = true;
+                CommentBool = true;
+                visibilidadBool = true;
+                productBool = true;
+                stockBool = false;
+            }
+
+            ///////////////////////////////////////////////////////////////
+            var crudServiceBaseUrl = "/Presencia",
+                        dataSource = new kendo.data.DataSource({
+                            type: "json",
+                            transport: {
+                                read: {
+                                    url: crudServiceBaseUrl + "/Consulta_Reportes_Presencia_Minorista",
+                                    type: "POST"
+                                },
+                                update: {
+                                    url: crudServiceBaseUrl + "/Update_General",
+                                    type: "POST"
+                                },
+                                parameterMap: function (options, operation) {
+                                    if (operation !== "read" && options.models) {
+                                        return { Datos: kendo.stringify(options.models) };
+                                    } else {
+                                        return {
+                                            CodCampania: CodCampania,
+                                            CodCanal: CodCanal,
+                                            CodOficina: CodOficina,
+                                            CodNodoComercial: CodNodoComercial,
+                                            CodigoPDV: ClientePDV,
+                                            CodPersona: CodPersona,
+                                            CodSupervisor: CodSupervisor,
+                                            CodTipoReporte: subreporte,
+                                            f_incio: f_incio,
+                                            f_fin: f_fin,
+                                            tipo: '2'
+                                        }
+                                    }
+                                }
+                            },
+                            batch: true,
+                            pageSize: 1000,
+                            schema: {
+                                model: {
+                                    id: "ID",
+                                    fields: {
+                                        ID: { editable: false, nullable: true },
+                                        FEC_REG_BD: { editable: true },
+                                        HoraRegistroBD: { editable: false },
+                                        Name_Oficina: { editable: false },
+                                        Supervisor: { editable: false },
+                                        Mercaderista: { editable: false },
+                                        CommercialNodeName: { editable: false },
+                                        ID_PTOVENTA: { editable: false },
+                                        Pdv_RazónSocial: { editable: false },
+                                        TipoReporte_Descripcion: { editable: false },
+                                        Categoria: { editable: false },
+                                        Marca: { editable: false },
+                                        COMENTARIO: { editable: true },
+                                        CreateBy: { editable: false },
+                                        DateBy: { editable: false },
+                                        ModiBy: { editable: false },
+                                        DateModiBy: { editable: false },
+                                        validado: { editable: false },
+                                        ID_CABECERA: { editable: false },
+                                        ID_OPCIONPRESENCIA: { editable: false },
+                                        LATITUD: { editable: false },
+                                        LONGITUD: { editable: false },
+                                        COD_DATO: { editable: false },
+                                        NOMBRE_DATO: { editable: false },
+                                        ValorProducto: { editable: true },
+                                        CódigoElementoVisibilidad: { editable: false },
+                                        ElementoVisibilidad: { editable: false },
+                                        ValorElementoVisibilidad: { editable: true },
+                                        FEC_REG_CEL: { editable: false },
+                                        HoraRegistroCelular: { editable: false },
+                                        STOCK: { editable: true },
+                                        MotivoNovisita: { editable: false },
+                                        Observaciones: { editable: true },
+                                        Cargo: { editable: false },
+                                        Id_Count: { editable: false }
+                                    }
+                                }
+                            }
+                        });
+
+            $("#grid").kendoGrid({
+                dataSource: dataSource,
+                filterable: true,
+                pageable: true,
+                height: 400,
+                columns: [
+                            
+                            { field: "Id_Count", title: "<span class='Cabecera'>Nro</span>", width: "60px" },
+                            { field: "ID", title: "<span class='Cabecera'>ID</span>", width: "80px" },
+                            { field: "FEC_REG_CEL", title: "<span class='Cabecera'>Fecha Registro<br>Celda</span>", width: "150px" },
+                            { field: "HoraRegistroCelular", title: "<span class='Cabecera'>Hora Registro Celda</span>", width: "150px" },
+                            { field: "Name_Oficina", title: "<span class='Cabecera'>Oficina</span>", width: "100px" },
+                            { field: "Supervisor", title: "<span class='Cabecera'>Supervisor</span>", width: "140px" },
+                            { field: "Mercaderista", title: "<span class='Cabecera'>Mercaderista</span>", width: "180px" },
+                            { field: "CommercialNodeName", title: "<span class='Cabecera'>Mercado</span>", width: "120px" },
+                            { field: "ID_PTOVENTA", title: "<span class='Cabecera'>Cod_Cliente</span>", width: "110px" },
+                            { field: "Pdv_RazónSocial", title: "<span class='Cabecera'>Cliente</span>", width: "240px" },
+                            { field: "TipoReporte_Descripcion", title: "<span class='Cabecera'>Reporte</span>", width: "130px" },
+                            { field: "Categoria", title: "<span class='Cabecera'>Categoria</span>", width: "150px" },
+                            { field: "Marca", title: "<span class='Cabecera'>Marca</span>", width: "120px" },
+                            { field: "CreateBy", title: "<span class='Cabecera'>Creado Por</span>", width: "150px" },
+                            { field: "DateBy", title: "<span class='Cabecera'>Fecha Registro</span>", width: "150px" },
+                            { field: "ModiBy", title: "<span class='Cabecera'>Modificado por</span>", width: "150px" },
+                            { field: "DateModiBy", title: "<span class='Cabecera'>Fecha de Modiciacion</span>", width: "150px" },
+                            { field: "ID_CABECERA", title: "<span class='Cabecera'>Cabecera</span>", width: "100px" },
+                            { field: "ID_OPCIONPRESENCIA", title: "<span class='Cabecera'>Cod_Reporte</span>", width: "100px" },
+                            { field: "LATITUD", title: "<span class='Cabecera'>Latitud</span>", width: "150px" },
+                            { field: "LONGITUD", title: "<span class='Cabecera'>Longitud</span>", width: "150px" },
+                            { field: "COD_DATO", hidden: productBool, title: "<span class='Cabecera'>Codigo Dato</span>", width: "100px" },
+                            { field: "NOMBRE_DATO", hidden: productBool, title: "<span class='Cabecera'>Nombre Dato</span>", width: "220px" },
+                            { field: "ValorProducto", hidden: productBool, title: "<span class='Cabecera'>Valor Dato</span>", width: "100px" },
+                            { field: "CódigoElementoVisibilidad", hidden: visibilidadBool, title: "<span class='Cabecera'>Codigo Elemento<br>Visibilidad</span>", width: "120px" },
+                            { field: "ElementoVisibilidad", hidden: visibilidadBool, title: "<span class='Cabecera'>Elemento<br>Visibilidad</span>", width: "150px" },
+                            { field: "ValorElementoVisibilidad", hidden: visibilidadBool, title: "<span class='Cabecera'>Valor Elemento<br>Visibilidad</span>", width: "150px" },
+                            { field: "FEC_REG_BD", title: "<span class='Cabecera'>Fecha Registro<br>Base Datos</span>", width: "150px", template: '#= kendo.toString(FEC_REG_BD,"dd/MM/yyyy hh:mm tt") #', editor: timeEditor },
+                            { field: "HoraRegistroBD", title: "<span class='Cabecera'>Hora Registro<br>Base Datos</span>", width: "100px" },
+                            { field: "MotivoNovisita", title: "<span class='Cabecera'>Motivo No<br>Visita</span>", width: "100px" },
+                            { field: "Observaciones", hidden: ObsBool, title: "<span class='Cabecera'>Observaciones</span>", width: "150px" },
+                            { field: "COMENTARIO", hidden: CommentBool, title: "<span class='Cabecera'>Comentario</span>", width: "160px" },
+                            { field: "Cargo", title: "<span class='Cabecera'>Cargo</span>", width: "220px" },
+                            { title: "<span class='Cabecera'>Validar</span>", width: "70px", template: '<input type="checkbox" name="CheckRow" id="CheckRow" value="#= ID #" #= validado ? "checked=checked" : "" # ></input>' },
+                            {command: ["edit"], title: "&nbsp;", width: "160px"}],
+                editable: "inline"
+            });
+
+            $('#checkall').unbind("click").click(function (event) {
+                $("#grid input:checkbox").attr("checked", this.checked);
+            });
+
+            $('#invalidar').unbind("click").click(function (event) {
+                event.preventDefault();
+                //$.blockUI({ message: $('#divMessage') });
+                var Checked = "";
+                var unChecked = new Array();
+                var count = 0;
+                var count2 = 0;
+                var total = 0;
+                $.each($("input[name='CheckRow']"), function () {
+
+                    if ($(this).is(':checked')) {
+                        total = total + 1;
+                        if (count == 0) {
+                            count = count + 1; Checked = $(this).val();
+                        } else {
+                            Checked = Checked + "," + $(this).val();
+                        }
+                    } else if ($(this).not(':checked')) {
+                        total = total + 1;
+                        if (count2 == 0) {
+                            count2 = count2 + 1; unChecked = $(this).val();
+                        } else {
+                            unChecked = unChecked + "," + $(this).val();
+                        }
+                    }
+                });
+
+                if (total > 0) {
+                    var tjson = JSON.stringify({
+                        Checked: Checked,
+                        unChecked: unChecked
+                    });
+
+                    $.ajax({
+                        type: 'POST',
+                        beforeSend: function () {
+                            $.blockUI({ message: $('#divMessage') });
+                        },
+                        cache: false,
+                        url: '@Url.Action("Validando_General", "Presencia")',
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: tjson,
+                        success: function (data) {
+                            $.unblockUI();
+                        },
+                        error: function (xhr, textStatus, errorThrown) {
+                            $.unblockUI();
+                        }
+                    });
+                }
+            }); //fin invalidar
+        });
+    }
+
+    function cerrarDiv() {
+        $.unblockUI();
+    }
+</script>
+<div id="divMessage" style="display: none;">
+    <img alt="" src="@Url.Content("~/Content/images/carga.gif")" />
+    Espere por favor...
+</div>
+<div id="divDescargaExcel" style="display: none;">
+<strong>
+    <a href="@Url.Action("exportarExcelPresencia_Minorista", "Presencia")"><img src="@Url.Content("~/Content/images/download_presencia.png")" alt="Descargar Excel" /></a><br />
+    <a href = "javascript:void(0)" onclick = "cerrarDiv()"><img alt="" src="@Url.Content("~/Content/images/cerrar.png")" /></a>
+</strong>
+</div>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td>
+            <img src="/Content/images/spacer.gif" width="29" height="1" border="0" alt="" />
+        </td>
+        <td>
+            <img src="/Content/images/spacer.gif" width="253" height="1" border="0" alt="" />
+        </td>
+        <td>
+            <img src="/Content/images/spacer.gif" width="21" height="1" border="0" alt="" />
+        </td>
+        <td width="11">
+            <img src="/Content/images/spacer.gif" width="1" height="1" border="0" alt="" />
+        </td>
+    </tr>
+    <tr>
+        <td style="background: url(/Content/images/reports_r1_c1.jpg); background-repeat: no-repeat"
+            width="29" height="46">
+            &nbsp;
+        </td>
+        <td background="/Content/images/reports_r1_c2.jpg" width="1240" height="46" align="center"
+            class="Cabecera">
+            Reportes de Presencia Minorista
+        </td>
+        <td style="background: url(/Content/images/reports_r1_c3.jpg); background-repeat: no-repeat"
+            width="21" height="46">
+            &nbsp;
+        </td>
+        <td>
+            <img src="/Content/images/spacer.gif" width="1" height="46" border="0" alt="" />
+        </td>
+    </tr>
+    <tr>
+        <td style="background: url(/Content/images/reports_r2_c1.jpg);" width="29" height="121">
+            &nbsp;
+        </td>
+        <td background="/Content/images/reports_r2_c2.jpg" width="100%" height="100%" align="center">
+            <table width="774" cellpadding="0" cellspacing="0" border="0" align="center">
+                <tr>
+                    <td width="164" align="right" class="Detalle">
+                        Fecha De Inicio :&nbsp;
+                    </td>
+                    <td width="229">
+                        <input id="fechaInicio"  value='@ViewBag.fechaDia 00:00 a.m.' style="width:210px;" />
+                    </td>
+                    <td width="131" align="right" class="Detalle">
+                        Fecha de Fin :&nbsp;
+                    </td>
+                    <td width="226">
+                        <input id="fechaFin"  value='@ViewBag.fechaDia 11:59 p.m.' style="width:210px;" />
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" class="Detalle">
+                        Canal :&nbsp;
+                    </td>
+                    <td>
+                        <input id="canal" class="Combos" />
+                    </td>
+                    <td align="right" class="Detalle">
+                        Campaña :&nbsp;
+                    </td>
+                    <td>
+                        <input id="campania" class="Combos" style="width: 250px" />
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" class="Detalle">
+                        Ciudad :&nbsp;
+                    </td>
+                    <td>
+                        <input id="ciudad" class="Combos" />
+                    </td>
+                    <td align="right" class="Detalle">
+                        Mercado :&nbsp;
+                    </td>
+                    <td>
+                        <input id="mercado" class="Combos" />
+                    </td>
+                </tr>
+                <tr>
+                    
+                    <td align="right" class="Detalle">
+                        Ciente :&nbsp;
+                    </td>
+                    <td>
+                        <input id="clientepdv" class="Combos" />
+                    </td>
+                     <td align="right" class="Detalle">
+                        Supervisor :&nbsp;
+                    </td>
+                    <td>
+                        <input id="supervisor" class="Combos" />
+                    </td>
+                </tr>
+                <tr>
+                   
+                    <td align="right" class="Detalle">
+                        Mercaderista :&nbsp;
+                    </td>
+                    <td>
+                        <input id="mercaderista" class="Combos" />
+                    </td>
+                    <td align="right" class="Detalle">
+                        Tipo de Reporte :&nbsp;
+                    </td>
+                    <td>
+                        <input id="subreporte" class="Combos" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" align="center">
+                        <br />
+                        <a href="#" class="button" id="buscar" name="buscar">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Buscar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </a>&nbsp;&nbsp;&nbsp;<a href="#" class="button" id="exportar" name="exportar">Exportar
+                            Excel</a>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td style="background: url(/Content/images/reports_r2_c3.jpg)" width="21" height="121">
+            &nbsp;
+        </td>
+        <td>
+            <img src="spacer.gif" width="1" height="121" border="0" alt="" />
+        </td>
+    </tr>
+    <tr>
+        <td style="background: url(/Content/images/reports_r3_c1.jpg); background-repeat: no-repeat"
+            width="29" height="24">
+            &nbsp;
+        </td>
+        <td style="background: url(/Content/images/reports_r3_c2.jpg);" width="1240" height="24">
+        </td>
+        <td style="background: url(/Content/images/reports_r3_c3.jpg); background-repeat: no-repeat"
+            width="30" height="24">
+            &nbsp;
+        </td>
+        <td>
+            <img src="/Content/images/spacer.gif" width="1" border="0" alt="" />
+        </td>
+    </tr>
+</table>
+<input type="checkbox" id="checkall" /><span class="Cabecera">Marcar/Descmarcar</span>&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="Validar" id="invalidar" />
+<div id="grid"></div>
+<div id="result"></div>
+<br /><br /><br /><br /><br /><br /><br /><br />

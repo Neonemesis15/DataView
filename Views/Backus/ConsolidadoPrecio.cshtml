@@ -1,0 +1,405 @@
+﻿@model Datamercaderista.Models.Backus.Modelo_Backus
+@using System.Data;
+
+@using Datamercaderista.Models.Backus;
+
+@{
+    ViewBag.Title = "Consolidado Precio";
+    Layout = null;
+}
+
+<link href="@Url.Content("~/Content/bootstrap/css/bootstrap.css")" rel="stylesheet" type="text/css" />
+<link href="../../Scripts/newKendo/kendo.common.css" rel="stylesheet" />
+<link href="../../Scripts/newKendo/kendo.default.css" rel="stylesheet" />
+<link href="@Url.Content("~/Scripts/lightbox/css/lightbox.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Content/kendoExportExcel/kendoExportExcel.css")" rel="stylesheet" />
+
+<script src="@Url.Content("~/Scripts/jquery-1.7.1.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery-ui-1.8.11.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.blockUI.js")" type="text/javascript"></script>
+<script src="../../Scripts/newKendo/kendo.web.min.js"></script>
+<script src="@Url.Content("~/Scripts/lightbox/js/lightbox.js")"></script>
+<script src="@Url.Content("~/Scripts/kendoExcelGrid.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/cultures/kendo.culture.es-PE.min.js")" type="text/javascript"></script>
+
+<style>
+    .k-grid-content > table > tbody > tr {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        color: #666666;
+    }
+
+    .Cabecera {
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: bold;
+        font-size: 11px;
+        color: #006699;
+    }
+
+    .Detalle {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        color: #666666;
+    }
+
+    .Combos {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 13px;
+    }
+
+    .button {
+        border-top: 1px solid #96d1f8;
+        background: #65a9d7;
+        background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));
+        background: -webkit-linear-gradient(top, #3e779d, #65a9d7);
+        background: -moz-linear-gradient(top, #3e779d, #65a9d7);
+        background: -ms-linear-gradient(top, #3e779d, #65a9d7);
+        background: -o-linear-gradient(top, #3e779d, #65a9d7);
+        padding: 9.5px 19px;
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+        -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+        -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+        box-shadow: rgba(0,0,0,1) 0 1px 0;
+        text-shadow: rgba(0,0,0,.4) 0 1px 0;
+        color: white;
+        font-size: 13px;
+        font-family: Helvetica, Arial, Sans-Serif;
+        text-decoration: none;
+        vertical-align: middle;
+    }
+
+        .button:hover {
+            border-top-color: #28597a;
+            background: #28597a;
+            color: #ccc;
+        }
+
+        .button:active {
+            border-top-color: #1b435e;
+            background: #1b435e;
+        }
+</style>
+<script>
+    $(function () {
+        var crudServiceBaseUrl = "/Backus",
+            oDataSource_Resumen = new kendo.data.DataSource({
+                type: "json",
+                transport: {
+                    read: {
+                        url: crudServiceBaseUrl + "/ConsolidadoBackusResumenPrecios",
+                        type: "POST"
+                    },
+                    parameterMap: function (options, operation) {
+                        if (operation !== "read" && options.models) {
+                            return { Datos: kendo.stringify(options.models) };
+                        }
+                    }
+                },
+                batch: true,
+                schema: {
+                    model: {
+                        id: "vao_i",
+                        fields: {
+                            @foreach (Backus_Consolidado_Cabecera col in Model.oLs)
+                            {
+                                switch (@col.cab_cabecera)
+                                {
+                                    case "Id":
+                                    case "vao_i":
+                                    case "Canal":
+                                    case "Oficina":
+                                    case "Cono":
+                                    case "Departamento":
+                                    case "Provincia":
+                                    case "Distrito":
+                                    case "Cadena":
+                                    case "Codigo_PDV":
+                                    case "Nombre_PDV":
+                                    case "Periodo":
+                                    case "EstadoRegistro":
+                                        break;
+                                    case "Resumen":
+                                        @Html.Raw("\"Resumen\": { editable: false },")
+                                        break;
+                                    default:
+                                        if (@col.cab_cabecera.Substring(0, 4) == "val_")
+                                        {
+                                            @Html.Raw("\"" + @col.cab_cabecera + "\": { editable: false },")
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+        oDataSource_Detalle = new kendo.data.DataSource({
+            type: "json",
+            transport: {
+                read: {
+                    url: crudServiceBaseUrl + "/ConsolidadoBackusDetallePrecios",
+                    type: "POST"
+                },
+                update: {
+                    url: crudServiceBaseUrl + "/ConsolidadoUpdatePrecio",
+                    type: "POST",
+                    complete: function (e) {
+                        alert("Los cambios fueron guardados con exito.");
+                        $("#kgrid_Resumen").data("kendoExcelGrid").dataSource.read();
+                    },
+                    error: function (e) {
+                        alert("Error al querer grabar.");
+                    }
+                },
+                parameterMap: function (options, operation) {
+                    if (operation !== "read" && options.models) {
+                        return { Datos: kendo.stringify(options.models) };
+                    }
+                }
+            },
+            batch: true,
+            pageSize: 1000,
+            schema: {
+                model: {
+                    id: "vao_i",
+                    fields: {
+                            @foreach (Backus_Consolidado_Cabecera col in Model.oLs)
+                            {
+                                switch (@col.cab_cabecera)
+                                {
+                                    case "Id":
+                                        @Html.Raw("\"Id\": { editable: false },")
+                                        break;
+                                    case "vao_i":
+                                        @Html.Raw("\"vao_i\": { editable: false },")
+                                        break;
+                                    case "Canal":
+                                        @Html.Raw("\"Canal\": { editable: false },")
+                                        break;
+                                    case "Oficina":
+                                        @Html.Raw("\"Oficina\": { editable: false },")
+                                        break;
+                                    case "Cono":
+                                        @Html.Raw("\"Cono\": { editable: false },")
+                                        break;
+                                    case "Departamento":
+                                        @Html.Raw("\"Departamento\": { editable: false },")
+                                        break;
+                                    case "Provincia":
+                                        @Html.Raw("\"Provincia\": { editable: false },")
+                                        break;
+                                    case "Distrito":
+                                        @Html.Raw("\"Distrito\": { editable: false },")
+                                        break;
+                                    case "Cadena":
+                                        @Html.Raw("\"Cadena\": { editable: false },")
+                                        break;
+                                    case "Codigo_PDV":
+                                        @Html.Raw("\"Codigo_PDV\": { editable: false },")
+                                        break;
+                                    case "Periodo":
+                                        @Html.Raw("\"Periodo\": { editable: false },")
+                                        break;
+                                    case "EstadoRegistro":
+                                        @Html.Raw("\"EstadoRegistro\": { editable: false },")
+                                        break;
+                                    case "Resumen":
+                                        break;
+                                    default:
+                                        if (@col.cab_cabecera.Substring(0, 4) == "val_")
+                                        {
+                                            @Html.Raw("\"" + @col.cab_cabecera + "\": { editable: true, type: 'number', validation: { required: false, min: 0 } },")                                    
+                                        }
+                                        else
+                                        {
+                                            @Html.Raw("\"" + @col.cab_cabecera + "\": { editable: false },")
+                                        }
+                                        break;
+                                }
+                            }
+                    }
+                }
+            }
+        });
+
+        $("#kgrid_Resumen").kendoExcelGrid({
+            autoBind: true,
+            dataSource: oDataSource_Resumen,
+            filterable: false,
+            pageable: false,
+            height: 155,
+            columns: [
+               @foreach (Backus_Consolidado_Cabecera col in Model.oLs)
+                {
+                    switch (@col.cab_cabecera)
+                    {
+                        case "Id":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"30px\" },")
+                            break;
+                        case "vao_i":
+                            break;
+                        case "Canal":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"70px\" },")
+                            break;
+                        case "Oficina":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"80px\" },")
+                            break;
+                        case "Cono":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"120px\" },")
+                            break;
+                        case "Departamento":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"140px\" },")
+                            break;
+                        case "Provincia":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"130px\" },")
+                            break;
+                        case "Distrito":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"140px\" },")
+                            break;
+                        case "Cadena":
+                            @Html.Raw(" { title: \"<span class='Cabecera'></span>\", width: \"120px\" },")
+                            break;
+                        case "Codigo_PDV":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"120px\" },")
+                            break;
+                        case "Nombre_PDV":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"120px\" },")
+                            break;
+                        case "Periodo":
+                            @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"120px\" },")
+                            break;
+                        case "EstadoRegistro":
+                           @Html.Raw("{ title: \"<span class='Cabecera'></span>\", width: \"120px\" },")
+                            break;
+                        case "Resumen":
+                            @Html.Raw("{ field: \"Resumen\", title: \"<span class='Cabecera'></span>\", width: \"80px\" },")
+                            break;
+                        default:
+                            if (@col.cab_cabecera.Substring(0, 4) == "val_")
+                            {
+                                //if (Model.oLs.IndexOf(col) == Model.oLs.Count - 1)
+                                //{
+                                //    @Html.Raw("{ field: \"" + @col.cab_cabecera + "\", title: \"<span class='Cabecera'>" + @col.cab_descripcion + "</span>\", width: \"137px\" },")
+                                //}else{
+                                    @Html.Raw("{ field: \"" + @col.cab_cabecera + "\", title: \"<span class='Cabecera'>" + @col.cab_descripcion + "</span>\", width: \"120px\" },")
+                                //}    
+                            }
+                            break;
+                    }
+                }
+            ],
+            editable: false
+        }).data("kendoExcelGrid");
+
+        $("#kgrid_Detalle").kendoExcelGrid({
+            dataSource: oDataSource_Detalle,
+            filterable: true,
+            navigatable: true,
+            pageable: {
+                pageSize: 1000,
+                messages: {
+                    empty: "No hay datos para mostrar"
+                }
+            },
+            toolbar: [
+                { name: "save", template: "<a class=\"btn btn-small btn-primary k-grid-save-changes\"><span class=\"k-icon k-update\"></span>Grabar</a>&nbsp;" },
+                { name: "cancel", template: "<a class=\"btn btn-small btn-primary k-grid-cancel-changes\"><span class=\"k-icon k-cancel\"></span>Cancelar</a>" }
+            ],
+            height: 365,
+            edit: onGridEditing,
+            columns: [
+                @foreach (Backus_Consolidado_Cabecera col in Model.oLs)
+                {
+                    switch (@col.cab_cabecera)
+                    {
+                        case "Id":
+                            @Html.Raw("{ field: \"Id\", title: \"<span class='Cabecera'>Id</span>\", width: \"30px\" },")
+                            break;
+                        case "vao_i":
+                            break;
+                        case "Canal":
+                            @Html.Raw("{ field: \"Canal\", title: \"<span class='Cabecera'>Canal</span>\", width: \"70px\" },")
+                            break;
+                        case "Oficina":
+                            @Html.Raw("{ field: \"Oficina\", title: \"<span class='Cabecera'>Oficina</span>\", width: \"80px\" },")
+                            break;
+                        case "Cono":
+                            @Html.Raw("{ field: \"Cono\", title: \"<span class='Cabecera'>Cono</span>\", width: \"120px\" },")
+                            break;
+                        case "Departamento":
+                            @Html.Raw("{ field: \"Departamento\", title: \"<span class='Cabecera'>Departamento</span>\", width: \"140px\" },")
+                            break;
+                        case "Provincia":
+                            @Html.Raw("{ field: \"Provincia\", title: \"<span class='Cabecera'>Provincia</span>\", width: \"130px\" },")
+                            break;
+                        case "Distrito":
+                            @Html.Raw("{ field: \"Distrito\", title: \"<span class='Cabecera'>Distrito</span>\", width: \"140px\" },")
+                            break;
+                        case "Cadena":
+                            @Html.Raw(" { field: \"Cadena\", title: \"<span class='Cabecera'>Cadena</span>\", width: \"120px\" },")
+                            break;
+                        case "Codigo_PDV":
+                            @Html.Raw("{ field: \"Codigo_PDV\", title: \"<span class='Cabecera'>Codigo PDV</span>\", width: \"120px\" },")
+                            break;
+                        case "Nombre_PDV":
+                            @Html.Raw("{ field: \"Nombre_PDV\", title: \"<span class='Cabecera'>Nombre PDV</span>\", width: \"120px\" },")
+                            break;
+                        case "Periodo":
+                            @Html.Raw("{ field: \"Periodo\", title: \"<span class='Cabecera'>Periodo</span>\", width: \"120px\" },")
+                            break;
+                        case "EstadoRegistro":
+                            @Html.Raw("{ field: \"EstadoRegistro\", title: \"<span class='Cabecera'>Estado Registro</span>\", width: \"120px\" },")
+                            @Html.Raw("{ title: \"<span class='Cabecera'>...</span>\", width: \"80px\" },")
+                            break;
+                        case "Resumen":
+                            break;
+                        default:
+                            if (@col.cab_cabecera.Substring(0, 4) == "val_")
+                            {
+                                @Html.Raw("{ field: \"" + @col.cab_cabecera + "\", title: \"<span class='Cabecera'>" + @col.cab_descripcion + "</span>\", width: \"120px\" },")
+                            }
+                            break;
+                    }
+                }
+            ],
+            editable: true,
+            export: {
+                cssClass: "k-grid-export-image",
+                title: "Consolidado Precio",
+                createUrl: crudServiceBaseUrl + "/ExportToExcelConsolidadoPrecio",
+                downloadUrl: "/Home/GetExcelFile"
+            }
+        }).data("kendoExcelGrid");
+
+        $("div.k-toolbar.k-grid-toolbar a.k-button").removeClass("k-button").addClass('btn btn-small btn-primary').css('margin-left', '5px');
+        $("div.k-toolbar.k-grid-toolbar a.btn.btn-small.btn-primary span").css('display', 'none');
+        $("div.k-toolbar.k-grid-toolbar a.k-grid-save-changes").append(' <i class="icon-hdd icon-white"></i>');
+        $("div.k-toolbar.k-grid-toolbar a.k-grid-cancel-changes").append(' <i class="icon-ban-circle icon-white"></i>');
+        $("div.k-toolbar.k-grid-toolbar a.btn.btn-small.btn-primary div.k-grid-export-image.k-icon").css('display', 'none');
+        $("div.k-toolbar.k-grid-toolbar a.k-grid-export").append(' <img src="../images/excel-3-16.png" />');
+
+        $("#kgrid_Resumen .k-grid-content").scroll(function () {
+            $("#kgrid_Detalle .k-grid-content").scrollLeft($(this).scrollLeft());
+        });
+    });
+
+    function onGridEditing(arg) {
+        $("input[type=text]").each(function () {
+            if ($(this).val() == null || $(this).val() == "") {
+                $(this).parent("span span").css("display", "none");
+            }
+        });
+        //arg.container.find("input[type='text']").attr('maxlength', '10');
+    }
+</script>
+
+<div id="divMessage" style="display: none;">
+    <img alt="" src="@Url.Content("~/Content/images/carga.gif")" />
+    Espere por favor...
+</div>
+<div id="kgrid_Resumen"></div>
+<div id="kgrid_Detalle"></div>
+<div id="result"></div>

@@ -1,0 +1,381 @@
+﻿@{
+    ViewBag.Title = "Vigencia";
+    Layout = null;
+
+    ViewBag.codCanal = Request.QueryString["codCanal"];
+    ViewBag.codEquipo = Request.QueryString["codEquipo"];
+    ViewBag.codReporte = Request.QueryString["codReporte"];
+    ViewBag.codAnio = Request.QueryString["codAnio"];
+    ViewBag.codMes = Request.QueryString["codMes"];
+    ViewBag.codPeriodo = Request.QueryString["codPeriodo"];
+    ViewBag.fecIni = Request.QueryString["fecIni"];
+    ViewBag.fecFin = Request.QueryString["fecFin"];
+    ViewBag.codOficina = Request.QueryString["codOficina"];
+    ViewBag.codDepartamento = Request.QueryString["codDepartamento"];
+    ViewBag.codProvincia = Request.QueryString["codProvincia"];
+    ViewBag.codSector = Request.QueryString["codSector"];
+    ViewBag.codDistrito = Request.QueryString["codDistrito"];
+    ViewBag.codCadena = Request.QueryString["codCadena"];
+    ViewBag.codPDV = Request.QueryString["codPDV"];
+    ViewBag.codEmpresa = Request.QueryString["codEmpresa"];
+    ViewBag.codCategoria = Request.QueryString["codCategoria"];
+    ViewBag.codSubCategoria = Request.QueryString["codSubCategoria"];
+    ViewBag.codMarca = Request.QueryString["codMarca"];
+    ViewBag.codProducto = Request.QueryString["codProducto"];
+    ViewBag.codPerfil = Request.QueryString["codPerfil"];
+    ViewBag.codUsuario = Request.QueryString["codUsuario"];
+    ViewBag.codEstado = Request.QueryString["codEstado"];    
+   
+}
+<link href="@Url.Content("~/Content/bootstrap/css/bootstrap.css")" rel="stylesheet" type="text/css" />
+<link href="@Url.Content("~/Content/bootstrap/css/bootstrap-responsive.css")" rel="stylesheet" type="text/css" />
+
+<link href="@Url.Content("~/Content/kendo.common.min.css")" rel="stylesheet" type="text/css" />
+<link href="@Url.Content("~/Content/kendo.default.min.css")" rel="stylesheet" type="text/css" />
+<script src="@Url.Content("~/Scripts/jquery-1.7.1.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery-ui-1.8.11.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.blockUI.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/kendo.web.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/cultures/kendo.culture.es-PE.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/lightbox/js/lightbox.js")"></script>
+<link href="@Url.Content("~/Scripts/lightbox/css/lightbox.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Content/kendoExportExcel/kendoExportExcel.css")" rel="stylesheet" />
+<script src="@Url.Content("~/Scripts/kendoExcelGrid.js")" type="text/javascript"></script>
+
+<script src="@Url.Content("~/Content/bootstrap/js/bootstrap.js")"></script>
+<script src="@Url.Content("~/Scripts/modalFoto.js")" type="text/javascript"></script>
+
+<style>
+    .Combos {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 13px;
+        width: 180px;
+    }
+
+    .Texto {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        color: #666666;
+        text-align: right;
+    }
+
+    .k-grid-content > table > tbody > tr {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        color: #666666;
+    }
+
+    .Cabecera {
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: bold;
+        font-size: 11px;
+        color: #003E86;
+    }
+
+    .Detalle {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        color: #666666;
+    }
+
+    .Combos {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 13px;
+    }
+
+    .button {
+        border-top: 1px solid #96d1f8;
+        background: #65a9d7;
+        background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));
+        background: -webkit-linear-gradient(top, #3e779d, #65a9d7);
+        background: -moz-linear-gradient(top, #3e779d, #65a9d7);
+        background: -ms-linear-gradient(top, #3e779d, #65a9d7);
+        background: -o-linear-gradient(top, #3e779d, #65a9d7);
+        padding: 9.5px 19px;
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+        -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+        -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+        box-shadow: rgba(0,0,0,1) 0 1px 0;
+        text-shadow: rgba(0,0,0,.4) 0 1px 0;
+        color: white;
+        font-size: 13px;
+        font-family: Helvetica, Arial, Sans-Serif;
+        text-decoration: none;
+        vertical-align: middle;
+    }
+
+        .button:hover {
+            border-top-color: #28597a;
+            background: #28597a;
+            color: #ccc;
+        }
+
+        .button:active {
+            border-top-color: #1b435e;
+            background: #1b435e;
+        }
+</style>
+<script>
+
+    $(document).ready(function () {
+
+        modelSearch = JSON.stringify({
+            codCanal: '@ViewBag.codCanal',
+            codEquipo: '@ViewBag.codEquipo',
+            codReporte: '@ViewBag.codReporte',
+            codAnio: '@ViewBag.codAnio',
+            codMes: '@ViewBag.codMes',
+            codPeriodo: '@ViewBag.codPeriodo',
+            fecIni: '@ViewBag.fecIni',
+            fecFin: '@ViewBag.fecFin',
+            codOficina: '@ViewBag.codOficina',
+            codDepartamento: '@ViewBag.codDepartamento',
+            codProvincia: '@ViewBag.codProvincia',
+            codSector: '@ViewBag.codSector',
+            codDistrito: '@ViewBag.codDistrito',
+            codCadena: '@ViewBag.codCadena',
+            codPDV: '@ViewBag.codPDV',
+            codEmpresa: '@ViewBag.codEmpresa',
+            codCategoria: '@ViewBag.codCategoria',
+            codSubCategoria: '@ViewBag.codSubCategoria',
+            codMarca: '@ViewBag.codMarca',
+            codProducto: '@ViewBag.codProducto',
+            codPerfil: '@ViewBag.codPerfil',
+            codUsuario: '@ViewBag.codUsuario',
+            codEstado: '@ViewBag.codEstado'
+        });
+
+        //console.log(modelSearch);
+        MostrarGrilla(modelSearch);
+
+    });
+
+    function GuardarGridVigencia(options, url) {
+        var model = JSON.stringify({
+            DataItems: JSON.stringify(options.data.models)
+        });
+        $.ajax({
+            type: 'POST',
+            cache: false,
+            url: url,
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: model,
+            success: function (result) {
+                //if (result.CodStatus == 1)
+                options.success();
+                //alert(result.Mensaje);
+            },
+            error: function (result) {
+                options.error(result);
+                alert("Error inesperado, intentelo nuevamente.");
+            }
+        });
+    }
+
+    function MostrarGrilla(modelSearch) {
+        $("#grid").remove();
+        $("#gridContent").append('<div id="grid"></div>');
+
+        var crudServiceBaseUrl = "/Backus";
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    var data = modelSearch;
+                    $.ajax({
+                        type: 'POST',
+                        url: crudServiceBaseUrl + '/GetDmBackusReporteVigencia',
+                        dataType: "json",
+                        data: data,
+                        contentType: "application/json; charset=utf-8",
+                        success: function (result) {
+                            options.success(result);
+                        },
+                        error: function (result) {
+                            options.error(result);
+                        }
+                    });
+                },
+                update: function (options) {
+                    var url = crudServiceBaseUrl + "/GuardarReporteBackusVigencia";
+                    GuardarGridVigencia(options, url);
+                }           
+            },
+            batch: true,
+            pageSize: 1000,
+            schema: {
+                model: {
+                    id: "IdRegDet",
+                    fields: {
+                        Empresa: { editable: false, nullable: true },
+                        Categoria: { editable: false, nullable: true },
+                        SubCategoria: { editable: false, nullable: true },
+                        Marca: { editable: false },
+                        CodProducto: { editable: false },
+                        Producto: { editable: false },
+                        Cantidad: { type: "number", validation: { required: false, min: 0 } },
+                        Fecha: { editable: false },
+                        UrlFoto: { editable: false },
+                        Validado: { editable: true, type: "boolean" }
+                        //Discontinued: { type: "boolean" },
+                        //UnitsInStock: { type: "number", validation: { min: 0, required: true } }
+                    }
+                }
+            }
+        });
+
+        $("#grid").kendoExcelGrid({
+            dataSource: dataSource,
+            filterable: true,
+            sortable: true,
+            navigatable: true,
+            pageable: {
+                pageSize: 1000,
+                messages: {
+                    empty: "No hay datos para mostrar"
+                }
+            },
+            columns: [
+                { field: "Empresa", title: "<span class='Cabecera'>Empresa</span>", width: 100 },
+                { field: "Categoria", title: "<span class='Cabecera'>Categoría</span>", width: 100 },
+                { field: "SubCategoria", title: "<span class='Cabecera'>Sub Categoría</span>", width: 150 },
+                { field: "Marca", title: "<span class='Cabecera'>Marca</span>", width: 110 },
+                { field: "CodProducto", title: "<span class='Cabecera'>Cod Producto</span>", width: 110 },
+                { field: "Producto", title: "<span class='Cabecera'>Producto</span>", width: 150 },
+                { field: "Cantidad", title: "<span class='Cabecera'>Cantidad</span>", width: 150 },
+                {
+                    field: "Fecha", title: "<span class='Cabecera'>Fecha</span>", width: 110,
+                    editor: function (container, options) {
+                        var model = options.model;
+
+                        $('<input id="dTpFecha" name="' + options.field + '" />')
+                            .appendTo(container)
+                            .kendoDateTimePicker({
+                                animation: false,
+                                footer: false,
+                                culture: "es-PE",
+                                format: "dd/MM/yyyy hh:mm:ss tt",
+                                change: function (e) {
+                                    model.set("Fecha", $('#dTpFecha').val());
+                                }
+                            });
+                    }
+                },
+                { field: "UrlFoto", title: "<span class='Cabecera'>Foto</span>", width: 110, template: '<button  class="btn btn-mini btn-primary" onclick="mostrarFoto(\'#=UrlFoto#\')" type="button"><i class="icon-camera icon-white"></i> Ver Foto</button>' },
+                { field: "Validado", title: "<span class='Cabecera'>Validado</span>", width: 100, template: '<i style="cursor:pointer;" class="#= Validado ? "icon-ok" : "icon-remove" #"></i>' },
+    //{ field: "Discontinued", width: 110 },
+                { command: { name: "edit", text: { edit: "Editar", cancel: "Cancelar", update: "Actualizar" } }, title: "&nbsp;", width: 180 }
+            ],
+            editable: "inline",
+            edit: function (e) {
+                // Disable the editor of the "id" column when editing data items                   
+            },
+            export: {
+                cssClass: "k-grid-export-image",
+                title: "Reporte Vigencia",
+                //createUrl: "/Home/ExportToExcel",
+                createUrl: "/Backus/ExportToExcelDmBackusReporteVigencia",
+                downloadUrl: "/Home/GetExcelFile"
+            }
+        }).data("kendoExcelGrid");
+        $("div.k-toolbar.k-grid-toolbar a.k-button").removeClass("k-button").addClass('btn btn-small btn-primary').css('margin-left', '5px');
+        $("div.k-toolbar.k-grid-toolbar a.btn.btn-small.btn-primary div.k-grid-export-image.k-icon").css('display', 'none');
+        $("div.k-toolbar.k-grid-toolbar a.k-grid-export").append(' <img src="../images/excel-3-16.png" />');
+
+        var newButtonsToolBar = ' <button class="btn btn-small btn-primary" onclick="invalidarPagina();">Invalidar Página <i class="icon-th-list icon-white"></i></button>';
+        newButtonsToolBar += ' <button class="btn btn-small btn-primary" onclick="validarPagina();" >Validar Página <i class="icon-th-list icon-white"></i></button>';
+        newButtonsToolBar += ' <button class="btn btn-small btn-primary" onclick="invalidarTodo();" >Invalidar Todo <i class="icon-list icon-white"></i></button>';
+        newButtonsToolBar += ' <button class="btn btn-small btn-primary" onclick="validarTodo();" >Validar Todo <i class="icon-list icon-white"></i></button>';
+        newButtonsToolBar += ' <button class="btn btn-small btn-primary" onclick="actualizarGrilla();" >Actualizar <i class="icon-refresh icon-white"></i></button>';
+        $("div.k-toolbar.k-grid-toolbar").append(newButtonsToolBar);
+        $(".k-grid-content").height("75%");
+    }
+
+    function invalidarPagina() {
+        var grid = $("#grid").data("kendoExcelGrid");
+
+        var data = grid.dataSource.view();//por pagina
+        var cantReg = data.length;
+        //console.log(grid.dataSource);
+        var model = JSON.stringify({
+            DataItems: JSON.stringify(data),
+            Validado: false
+        });
+
+        var message = "Se invalidaron : " + cantReg + " registros."
+
+        Validacion(model, message);
+    }
+    function validarPagina() {
+        var grid = $("#grid").data("kendoExcelGrid");
+
+        var data = grid.dataSource.view(); //por pagina
+        var cantReg = data.length;
+        var model = JSON.stringify({
+            DataItems: JSON.stringify(data),
+            Validado: true
+        });
+
+        var message = "Se validaron : " + cantReg + " registros."
+
+        Validacion(model, message);
+    }
+    function invalidarTodo() {
+        var grid = $("#grid").data("kendoExcelGrid");
+
+        var data = grid.dataSource.data();//todo
+        var cantReg = grid.dataSource.total();
+        var model = JSON.stringify({
+            DataItems: JSON.stringify(data),
+            Validado:false
+        });
+
+        var message = "Se invalidaron : " + cantReg + " registros."
+
+        Validacion(model, message);
+    }
+    function validarTodo() {
+        var grid = $("#grid").data("kendoExcelGrid");
+
+        var data = grid.dataSource.data();//todo
+        var cantReg = grid.dataSource.total();
+        var model = JSON.stringify({
+            DataItems:JSON.stringify(data),
+            Validado: true
+        });
+
+        var message = "Se validaron : " + cantReg + " registros."
+
+        Validacion(model, message);
+    }
+    function Validacion(model,message) {
+        $.ajax({
+            type: 'POST',
+            url: '/Backus/ValidarInvalidarReporteVigencia',
+            dataType: "json",
+            data: model,
+            contentType: "application/json; charset=utf-8",
+            success: function (result) {
+
+                MostrarGrilla(modelSearch);
+                alert(message);
+            },
+            error: function (result) {
+
+            }
+        });
+    }
+
+    function mostrarFoto(urlFoto) {
+        renderModalFoto('myModal', urlFoto);
+    }
+    function actualizarGrilla() {
+        MostrarGrilla(modelSearch);
+    }
+</script>
+<div id="gridContent">
+</div>
+<div id="myModal">
+</div>

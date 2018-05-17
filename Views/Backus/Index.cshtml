@@ -1,0 +1,1109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    @{
+        ViewBag.Title = ".::. Data GIE Backus  .::.";
+        Layout = null;
+    }
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    <link rel="shortcut icon" href="Pages/Modulos/Cliente/imgs/lucky.ico" />
+    <script src="@Url.Content("~/Scripts/jquery-1.7.1.js")" type="text/javascript"></script>
+    <link href="@Url.Content("~/Content/sistema.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Scripts/extJS/resources/css/ext-all-gray.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/Ecu_Reportes.css")" rel="stylesheet" type="text/css" />
+    <script src="@Url.Content("~/Scripts/extJS/ext-all.js")" type="text/javascript"></script>
+    <script type="text/javascript">
+
+        /************* iniico para statusbar  *****************/
+        Ext.Loader.setConfig({
+            enabled: true
+        });
+
+        Ext.Loader.setPath('Ext.ux', '/Script/extJS/ux/');
+
+        //    Ext.require([
+        //      'Ext.ux.statusbar.StatusBar',
+        //      'Ext.toolbar.TextItem',
+        //    ]);
+        //    /************* fin para statusbar *****************/
+
+        function confirmarCerrar() {
+            Ext.MessageBox.confirm('Confirmar', '¿Seguro que desea cerrar sesión?', cerrarSesion);
+        }
+        function cerrarSesion(btn) {
+            if (btn == 'yes') {
+                var url = '/Home/Logout';
+                window.location = url;
+            }
+        }
+
+        Ext.onReady(function () {
+            ///////////////// MENU ////////////////////////////////////////////////////
+            function Capitalize(word) {
+                var txt = word;
+                word = txt.substring(0, 1).toUpperCase() + txt.substring(1, txt.length);
+                return word;
+            }
+
+            //Ext.define('Menu', {
+            //    extend: 'Ext.data.Model',
+            //    fields: ['id', 'text', 'leaf', 'parent_id', 'icon', 'hrefTarget', 'expanded']
+            //});
+
+            @*var treestore = Ext.create('Ext.data.TreeStore', {
+                model: 'menu',
+                autoLoad: true,
+                proxy: {
+                    type: 'ajax',
+                    url: '/Home/Listar_Menu2?idcompania=@ViewBag.idcompania&canal=@ViewBag.canal&modulo=' + "07" + '', //modificacion
+                    node: 'id', // send the parent id through GET (default 0)
+                    reader: {
+                        type: 'json',
+                        root: 'a'
+                    }
+                }
+            });*@
+            ///////////////////////////////////////////////////////////////////////////
+            //Controla tiempo para cargar la interfaz y desaperecer icono que carga
+            Ext.QuickTips.init();
+
+            var home = new Ext.Panel({
+                title: "Home",
+                height: 600,
+                icon: '/Content/images/icons/inicio.png',
+                //html: 'Bienvenido'
+                html: '<iframe id="frame-welcome" src="/Home/Bienvenido" border="0" width="100%" height="100%" style="border:0" ></iframe>'
+            });
+            //ponemos el tab en una barra para ponerlo en algun lado
+
+            this.tabs = new Ext.TabPanel({
+                id: 'mainpanel',
+                border: false,
+                activeTab: 0,
+                height: 600,
+                enableTabScroll: true, //hacemos que sean recorridas
+                items: [home]
+            });
+
+            //////////////////////////////////////////////////////////////////////////////////////////
+            var clock = Ext.create('Ext.toolbar.TextItem', { text: Ext.Date.format(new Date(), 'g:i:s A') })
+
+            //declarando variables
+
+            var idcanal;
+
+            Ext.define('GenericComboModel', {
+                extend: 'Ext.data.Model',
+                fields: ['Value', 'Text']
+            });
+
+            var canalStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                autoLoad: true,
+                proxy: {
+                    extraParams: {
+                        v_codCliente: "1637",
+                        v_country: '589'
+                    },
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_Canal", "EcuDigitacion")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var equipoStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                //autoLoad: false,
+                //pruneModifiedRecords: true,
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("ListarCampaniaxCanal_Compania", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var oficinaStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("listarOficinasPorCodPais_CodCliente_CodCampania", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var departamentoStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("ListarDepartamentos", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var provinciaStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("ListarProvincias", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var sectorStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("ListarConos", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var distritoStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("listarDistritos", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            Ext.define('GenericComboModelReporte', {
+                extend: 'Ext.data.Model',
+                fields: ['Id', 'Value', 'Text']
+            });
+
+            var reporteStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModelReporte',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_ReportesPorPlanning", "Backus")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var anioStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("GetAnios", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var mesStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("GetMeses", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var periodoStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("GetPeriodos", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            function SetCalendars(calendarIni, calendarFin, params) {
+                var dataPeriodo;
+                $.ajax({
+                    type: 'POST',
+                    async: false,
+                    cache: false,
+                    url: '@Url.Action("GetPeriodoShortString", "Home")',
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(params),
+                    success: function (data) {
+                        dataPeriodo = data;
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        alert('Error inesperado, vuelva a intentarlo.');
+                    }
+                });
+
+                calendarIni.setMinValue(Ext.Date.parse(dataPeriodo.FecIni, "d/m/Y"));
+                calendarIni.setMaxValue(Ext.Date.parse(dataPeriodo.FecFin, "d/m/Y"));
+                calendarFin.setMinValue(dataPeriodo.FecIni);
+                calendarFin.setMaxValue(dataPeriodo.FecFin);
+
+                if (dataPeriodo.DateDiffNumMeses <= 365) {
+                    calendarIni.setValue(Ext.Date.parse(dataPeriodo.FecIni, "d/m/Y"));
+                    calendarFin.setValue(dataPeriodo.FecFin);
+                }
+                else {
+                    calendarIni.setValue(dataPeriodo.DateNow);
+                    calendarFin.setValue(dataPeriodo.DateNow);
+                }
+            }
+
+            var cadenaStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtiene_Cadena", "Home")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var empresaStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_Empresas", "Backus")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var categoriaStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_CategoriaPorplanning", "Backus")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var subCategoriaStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_SubCategoriaPorplanning", "Backus")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var marcaStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_MarcaPorPlanning", "Backus")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var productoStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_ProductoPorPlanning", "Backus")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var perfilStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_PerfilesPorCliente", "Backus")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var usuarioStore = Ext.create('Ext.data.Store', {
+                model: 'GenericComboModel',
+                proxy: {
+                    type: 'ajax',
+                    url: '@Url.Action("Obtener_UsuariosPorPlanning", "Backus")',
+                    reader: {
+                        type: 'json',
+                        root: 'states'
+                    }
+                }
+            });
+
+            var estadoStore = Ext.create('Ext.data.Store', {
+                fields: ['Value', 'Text'],
+                data: [
+                    { "Value": "1", "Text": "Validado" },
+                    { "Value": "0", "Text": "No Validado" }
+                ]
+            });
+
+            function getComboxItem(cb, nameIn) {
+                try {
+                    var r = cb.getStore().find(nameIn, cb.getValue());
+                    return cb.store.getAt(r).data;//r.get(nameOut);
+                }
+                catch (err) {
+                    return 'error';
+                }
+            }
+
+            Ext.create('Ext.container.Viewport', {
+                layout: 'border',
+                items: [
+                                Ext.create('Ext.Component', {
+                                    region: 'north',
+                                    height: 65,
+                                    autoEl: {
+                                        tag: 'div',
+                                        // html: '<div class="cls_cab_ecu_rep" ><b class="cab01">Xplora</b> <b class="cab02">DATAMERCADERISTA</b></div>'
+                                        html: '<div class="cls_content_cab_ecu_rep"><img src="/Content/images/cabecera03.png" class="cls_imgCab_ecu_rep"><div class="cls_cabText_ecu_rep" ><img src="/Content/images/logo_cab.png" class="cls_imgCab02_ecu_rep" >DATA GIE BACKUS</div></div>'
+                                    }
+                                })
+                    , {
+                        region: 'west',
+                        collapsible: true,
+                        title: 'Menu',
+                        //width: 230,
+                        width: 280,
+                        split: true,
+                        //Insertamos un panel tipo acordion para los menues
+                        //xtype: 'combo',// comentamos para hacelo con html
+                        //store: treestore,  
+
+                        items: [{ //agregamos items de tipo combo     
+                            editable: false,
+                            forceSelection: true,
+                            id: 'cmbCanal',
+                            emptyText: '--Selecione--',
+                            fieldLabel: 'Canal',
+                            xtype: 'combo',
+                            displayField: 'Text',
+                            valueField: 'Value',
+                            store: canalStore,
+                            triggerAction: 'all',
+                            queryMode: 'local',
+                            listeners: {
+                                'select': function (field, nval, oval) {
+                                    //console.log(field);                                   
+                                    equipoStore.load({
+                                        params: {
+                                            'idcanal': field.value,
+                                            'idcompania': '1637',
+                                        }
+                                    });
+                                }
+                            }
+                        },
+                        {    //combo equipo  
+                            editable: false,
+                            forceSelection: true,
+                            id: 'cmbEquipo',
+                            emptyText: '--Seleccione--',
+                            fieldLabel: 'Campaña',
+                            xtype: 'combo',
+                            displayField: 'Text',
+                            valueField: 'Value',
+                            store: equipoStore,
+                            triggerAction: 'all',
+                            queryMode: 'local',
+                            listeners: {
+                                'select': function (field, nval, oval) {
+                                    reporteStore.load({
+                                        params: {
+                                            codEquipo: field.value,
+                                        }
+                                    });
+                                }
+                            }
+                        },
+                         {    //combo Reporte  
+                             editable: false,
+                             forceSelection: true,
+                             id: 'cmbReporte',
+                             emptyText: '--Seleccione--',
+                             fieldLabel: 'Reporte',
+                             xtype: 'combo',
+                             displayField: 'Text',
+                             valueField: 'Id',
+                             store: reporteStore,
+                             triggerAction: 'all',
+                             queryMode: 'local',
+                             listeners: {
+                                 'select': function (field, nval, oval) {
+                                     anioStore.load();
+                                     //mesStore.load();
+                                 }
+                             }
+                         },
+                          {    //combo Año  
+                              editable: false,
+                              forceSelection: true,
+                              id: 'cmbAnio',
+                              emptyText: '--Seleccione--',
+                              fieldLabel: 'Año',
+                              xtype: 'combo',
+                              displayField: 'Text',
+                              valueField: 'Value',
+                              store: anioStore,
+                              triggerAction: 'all',
+                              queryMode: 'local',
+                              listeners: {
+                                  'select': function (field, nval, oval) {
+                                      mesStore.load();
+                                  }
+                              }
+                          },
+                           {    //combo Mes  
+                               editable: false,
+                               forceSelection: true,
+                               id: 'cmbMes',
+                               emptyText: '--Seleccione--',
+                               fieldLabel: 'Mes',
+                               xtype: 'combo',
+                               displayField: 'Text',
+                               valueField: 'Value',
+                               store: mesStore,
+                               triggerAction: 'all',
+                               queryMode: 'local',
+                               listeners: {
+                                   'select': function (field, nval, oval) {
+                                       periodoStore.load({
+                                           params: {
+                                               codCampania: Ext.getCmp('cmbEquipo').getValue(),
+                                               anio: Ext.getCmp('cmbAnio').getValue(),
+                                               mes: field.value,
+                                               codReporte: getComboxItem(Ext.getCmp('cmbReporte'), 'Id').Value
+                                           }
+                                       });
+                                   }
+                               }
+                           },
+                           {    //combo Periodo  
+                               editable: false,
+                               forceSelection: true,
+                               id: 'cmbPeriodo',
+                               emptyText: '--Seleccione--',
+                               fieldLabel: 'Periodo',
+                               xtype: 'combo',
+                               displayField: 'Text',
+                               valueField: 'Value',
+                               store: periodoStore,
+                               triggerAction: 'all',
+                               queryMode: 'local',
+                               listeners: {
+                                   'select': function (field, nval, oval) {
+                                       var calendarIni = Ext.getCmp('fecIni');
+                                       var calendarFin = Ext.getCmp('fecFin');
+                                       var params = {
+                                           codPeriodo: field.value,
+                                           anio: Ext.getCmp('cmbAnio').getValue(),
+                                           mes: Ext.getCmp('cmbMes').getValue()
+                                       };
+                                       SetCalendars(calendarIni, calendarFin, params);
+                                       oficinaStore.load({
+                                           params: {
+                                               'codcampania': Ext.getCmp('cmbEquipo').getValue(),
+                                           }
+                                       });
+                                   }
+                               }
+                           },
+                           {
+                               xtype: 'datefield',
+                               fieldLabel: 'Fecha Inicio',
+                               name: 'to_date',
+                               //style: 'float: right',
+                               //**cls:'x-border-box, x-border-box',**
+                               id: 'fecIni',
+                               value: new Date(),
+                               //maxValue: today,
+                               format: "d/m/Y",
+                               layout: 'form',
+                               listeners: {
+                                   select: function (combo, value) {
+                                       todate = value;
+                                   }
+                               }
+                           },
+                            {
+                                xtype: 'datefield',
+                                fieldLabel: 'Fecha Fin',
+                                //style: 'float: right',
+                                cls: 'x-border-box, x-border-box',
+                                name: '_fromdate',
+                                id: 'fecFin',
+                                value: new Date(),
+                                //maxValue: today,
+                                format: "d/m/Y",
+                                layout: 'form',
+                                listeners: {
+                                    select: function (combo, value) {
+                                        fromdate = value;
+                                    }
+                                }
+
+                            },
+                         {    //combo oficina  
+                             //editable: false,
+                             //forceSelection: true,
+                             id: 'cmbOficina',
+                             emptyText: '--Todos--',
+                             fieldLabel: 'Oficina',
+                             xtype: 'combo',
+                             displayField: 'Text',
+                             valueField: 'Value',
+                             store: oficinaStore,
+                             triggerAction: 'all',
+                             queryMode: 'local',
+                             listeners: {
+                                 'select': function (field, nval, oval) {
+                                     departamentoStore.load({
+                                         params: {
+                                             idoficina: field.value,
+                                             codCampania: Ext.getCmp('cmbEquipo').getValue()
+                                         }
+                                     });
+                                 }
+                             }
+                         },
+                          {    //combo deparamento  
+                              //editable: false,
+                              //forceSelection: true,
+                              id: 'cmbDepartamento',
+                              emptyText: '--Todos--',
+                              fieldLabel: 'Departamento',
+                              xtype: 'combo',
+                              displayField: 'Text',
+                              valueField: 'Value',
+                              store: departamentoStore,
+                              triggerAction: 'all',
+                              queryMode: 'local',
+                              listeners: {
+                                  'select': function (field, nval, oval) {
+                                      provinciaStore.load({
+                                          params: {
+                                              codCampania: Ext.getCmp('cmbEquipo').getValue(),
+                                              codOficina: Ext.getCmp('cmbOficina').getValue(),
+                                              codDpto: field.value
+                                          }
+                                      });
+                                  }
+                              }
+                          },
+                           {    //combo provincia  
+                               //editable: false,
+                               //forceSelection: true,
+                               id: 'cmbProvincia',
+                               emptyText: '--Todos--',
+                               fieldLabel: 'Provincia',
+                               xtype: 'combo',
+                               displayField: 'Text',
+                               valueField: 'Value',
+                               store: provinciaStore,
+                               triggerAction: 'all',
+                               queryMode: 'local',
+                               listeners: {
+                                   'select': function (field, nval, oval) {
+                                       sectorStore.load({
+                                           params: {
+                                               codPais: '589',
+                                               codDepartamento: Ext.getCmp('cmbDepartamento').getValue(),
+                                               codProvincia: field.value
+                                           }
+                                       });
+                                       distritoStore.load({
+                                           params: {
+                                               codPais: '589',
+                                               codDepartamento: Ext.getCmp('cmbDepartamento').getValue(),
+                                               codProvincia: field.value,
+                                               codSector: "0"
+                                           }
+                                       });
+                                   }
+                               }
+                           },
+                            {    //combo sector  
+                                //editable: false,
+                                //forceSelection: true,
+                                id: 'cmbSector',
+                                emptyText: '--Todos--',
+                                fieldLabel: 'Cono',
+                                xtype: 'combo',
+                                displayField: 'Text',
+                                valueField: 'Value',
+                                store: sectorStore,
+                                triggerAction: 'all',
+                                queryMode: 'local',
+                                listeners: {
+                                    'select': function (field, nval, oval) {
+                                        distritoStore.load({
+                                            params: {
+                                                codPais: '589',
+                                                codDepartamento: Ext.getCmp('cmbDepartamento').getValue(),
+                                                codProvincia: Ext.getCmp('cmbProvincia').getValue(),
+                                                codSector: field.value
+                                            }
+                                        });
+                                    }
+                                }
+                            },
+                           {    //combo distrito  
+                               //editable: false,
+                               //forceSelection: true,
+                               id: 'cmbDistrito',
+                               emptyText: '--Todos--',
+                               fieldLabel: 'Distrito',
+                               xtype: 'combo',
+                               displayField: 'Text',
+                               valueField: 'Value',
+                               store: distritoStore,
+                               triggerAction: 'all',
+                               queryMode: 'local',
+                               listeners: {
+                                   'select': function (field, nval, oval) {
+                                       cadenaStore.load({
+                                           params: {
+                                               CodCampania: Ext.getCmp('cmbEquipo').getValue(),
+                                               CodDepartamento: Ext.getCmp('cmbDepartamento').getValue(),
+                                               CodProvincia: Ext.getCmp('cmbProvincia').getValue(),
+                                               CodDistrito: field.value,
+                                           }
+                                       });
+                                   }
+                               }
+                           },
+                            {    //combo Cadena  
+                                //editable: false,
+                                //forceSelection: true,
+                                id: 'cmbCadena',
+                                emptyText: '--Todas--',
+                                fieldLabel: 'Cadena',
+                                xtype: 'combo',
+                                displayField: 'Text',
+                                valueField: 'Value',
+                                store: cadenaStore,
+                                triggerAction: 'all',
+                                queryMode: 'local',
+                                listeners: {
+                                    'select': function (field, nval, oval) {
+                                        empresaStore.load({
+                                            params: {
+                                                codCompania: '1637'
+                                            }
+                                        });
+                                    }
+                                }
+                            },
+                            {
+                                xtype: 'textfield',
+                                emptyText: 'Código PDV',
+                                fieldLabel: 'Código PDV',
+                                id: 'txtCodPDV',
+                                allowBlank: true,
+
+                            },
+                             {    //combo Empresa  
+                                 id: 'cmbEmpresa',
+                                 emptyText: '--Todas--',
+                                 fieldLabel: 'Empresa',
+                                 xtype: 'combo',
+                                 displayField: 'Text',
+                                 valueField: 'Value',
+                                 store: empresaStore,
+                                 triggerAction: 'all',
+                                 queryMode: 'local',
+                                 listeners: {
+                                     'select': function (field, nval, oval) {
+                                         categoriaStore.load({
+                                             params: {
+                                                 codEquipo: Ext.getCmp('cmbEquipo').getValue(),
+                                                 codReporte: getComboxItem(Ext.getCmp('cmbReporte'), 'Id').Value
+                                             }
+                                         });
+                                     }
+                                 }
+                             },
+                              {    //combo Categoria  
+                                  id: 'cmbCategoria',
+                                  emptyText: '--Todas--',
+                                  fieldLabel: 'Categoria',
+                                  xtype: 'combo',
+                                  displayField: 'Text',
+                                  valueField: 'Value',
+                                  store: categoriaStore,
+                                  triggerAction: 'all',
+                                  queryMode: 'local',
+                                  listeners: {
+                                      'select': function (field, nval, oval) {
+                                          subCategoriaStore.load({
+                                              params: {
+                                                  codEquipo: Ext.getCmp('cmbEquipo').getValue(),
+                                                  codReporte: getComboxItem(Ext.getCmp('cmbReporte'), 'Id').Value
+                                              }
+                                          });
+                                      }
+                                  }
+                              },
+                               {    //combo SubCategoría  
+                                   id: 'cmbSubCategoria',
+                                   emptyText: '--Todas--',
+                                   fieldLabel: 'SubCategoria',
+                                   xtype: 'combo',
+                                   displayField: 'Text',
+                                   valueField: 'Value',
+                                   store: subCategoriaStore,
+                                   triggerAction: 'all',
+                                   queryMode: 'local',
+                                   listeners: {
+                                       'select': function (field, nval, oval) {
+                                           marcaStore.load({
+                                               params: {
+                                                   codEquipo: Ext.getCmp('cmbEquipo').getValue(),
+                                                   codReporte: getComboxItem(Ext.getCmp('cmbReporte'), 'Id').Value
+                                               }
+                                           });
+                                       }
+                                   }
+                               },
+                                {    //combo Marca  
+                                    id: 'cmbMarca',
+                                    emptyText: '--Todas--',
+                                    fieldLabel: 'Marca',
+                                    xtype: 'combo',
+                                    displayField: 'Text',
+                                    valueField: 'Value',
+                                    store: marcaStore,
+                                    triggerAction: 'all',
+                                    queryMode: 'local',
+                                    listeners: {
+                                        'select': function (field, nval, oval) {
+                                            productoStore.load({
+                                                params: {
+                                                    codEquipo: Ext.getCmp('cmbEquipo').getValue(),
+                                                    codReporte: getComboxItem(Ext.getCmp('cmbReporte'), 'Id').Value
+                                                }
+                                            });
+                                        }
+                                    }
+                                },
+                                 {    //combo Producto  
+                                     id: 'cmbProducto',
+                                     emptyText: '--Todas--',
+                                     fieldLabel: 'Producto',
+                                     xtype: 'combo',
+                                     displayField: 'Text',
+                                     valueField: 'Value',
+                                     store: productoStore,
+                                     triggerAction: 'all',
+                                     queryMode: 'local',
+                                     listeners: {
+                                         'select': function (field, nval, oval) {
+                                             perfilStore.load({
+                                                 params: {
+                                                     codCompania: '1637'
+                                                 }
+                                             });
+                                         }
+                                     }
+                                 },
+                                  {    //combo Perfil  
+                                      id: 'cmbPerfil',
+                                      emptyText: '--Todas--',
+                                      fieldLabel: 'Perfil',
+                                      xtype: 'combo',
+                                      displayField: 'Text',
+                                      valueField: 'Value',
+                                      store: perfilStore,
+                                      triggerAction: 'all',
+                                      queryMode: 'local',
+                                      listeners: {
+                                          'select': function (field, nval, oval) {
+                                              usuarioStore.load({
+                                                  params: {
+                                                      codCompania: '1637',
+                                                      codEquipo: Ext.getCmp('cmbEquipo').getValue()
+                                                  }
+                                              });
+                                          }
+                                      }
+                                  },
+                                   {    //combo Usuario  
+                                       id: 'cmbUsuario',
+                                       emptyText: '--Todas--',
+                                       fieldLabel: 'Usuario',
+                                       xtype: 'combo',
+                                       displayField: 'Text',
+                                       valueField: 'Value',
+                                       store: usuarioStore,
+                                       triggerAction: 'all',
+                                       queryMode: 'local',
+                                       listeners: {
+                                           'select': function (field, nval, oval) {
+                                               estadoStore.load();
+                                           }
+                                       }
+                                   },
+                                    {    //combo Estado  
+                                        id: 'cmbEstado',
+                                        emptyText: '--Todas--',
+                                        fieldLabel: 'Estado',
+                                        xtype: 'combo',
+                                        displayField: 'Text',
+                                        valueField: 'Value',
+                                        store: estadoStore,
+                                        triggerAction: 'all',
+                                        queryMode: 'local'
+                                    },
+
+                        {
+                            xtype: 'button',
+                            text: 'Buscar',
+                            width: 120,
+                            margin: 5,
+                            //style: { backgroundColor: '#E0ECFF' },
+                            listeners: {
+                                click: function () {
+                                    //this == the button, as we are in the local scope
+                                    //this.setText('I was clicked!');
+                                    var canalValue = (Ext.getCmp('cmbCanal').getValue() != null) ? Ext.getCmp('cmbCanal').getValue() : '0';
+                                    var equipoValue = (Ext.getCmp('cmbEquipo').getValue() != null) ? Ext.getCmp('cmbEquipo').getValue() : '0';
+                                    var anioValue = (Ext.getCmp('cmbAnio').getValue() != null) ? Ext.getCmp('cmbAnio').getValue() : '0';
+                                    var mesValue = (Ext.getCmp('cmbMes').getValue() != null) ? Ext.getCmp('cmbMes').getValue() : '0';
+                                    var periodoValue = (Ext.getCmp('cmbPeriodo').getValue() != null) ? Ext.getCmp('cmbPeriodo').getValue() : '0';
+                                    var fecIniValue = (Ext.getCmp('fecIni').getValue() != null) ? Ext.getCmp('fecIni').getValue() : '0';
+                                    var fecFinValue = (Ext.getCmp('fecFin').getValue() != null) ? Ext.getCmp('fecFin').getValue() : '0';
+                                    var oficinaValue = (Ext.getCmp('cmbOficina').getValue() != null) ? Ext.getCmp('cmbOficina').getValue() : '0';
+                                    var departamentoValue = (Ext.getCmp('cmbDepartamento').getValue() != null) ? Ext.getCmp('cmbDepartamento').getValue() : '0';
+                                    var provinciaValue = (Ext.getCmp('cmbProvincia').getValue() != null) ? Ext.getCmp('cmbProvincia').getValue() : '0';
+                                    var sectorValue = (Ext.getCmp('cmbSector').getValue() != null) ? Ext.getCmp('cmbSector').getValue() : '0';
+                                    var distritoValue = (Ext.getCmp('cmbDistrito').getValue() != null) ? Ext.getCmp('cmbDistrito').getValue() : '0';
+                                    var cadenaValue = (Ext.getCmp('cmbCadena').getValue() != null) ? Ext.getCmp('cmbCadena').getValue() : '0';
+                                    var codPDVValue = (Ext.getCmp('txtCodPDV').getValue() != null) ? Ext.getCmp('txtCodPDV').getValue() : '0';
+                                    var empresaValue = (Ext.getCmp('cmbEmpresa').getValue() != null) ? Ext.getCmp('cmbEmpresa').getValue() : '0';
+                                    var categoriaValue = (Ext.getCmp('cmbCategoria').getValue() != null) ? Ext.getCmp('cmbCategoria').getValue() : '0';
+                                    var subCategoriaValue = (Ext.getCmp('cmbSubCategoria').getValue() != null) ? Ext.getCmp('cmbSubCategoria').getValue() : '0';
+                                    var marcaValue = (Ext.getCmp('cmbMarca').getValue() != null) ? Ext.getCmp('cmbMarca').getValue() : '0';
+                                    var productoValue = (Ext.getCmp('cmbProducto').getValue() != null) ? Ext.getCmp('cmbProducto').getValue() : '0';
+                                    var perfilValue = (Ext.getCmp('cmbPerfil').getValue() != null) ? Ext.getCmp('cmbPerfil').getValue() : '0';
+                                    var usuarioValue = (Ext.getCmp('cmbUsuario').getValue() != null) ? Ext.getCmp('cmbUsuario').getValue() : '0';
+                                    var estadoValue = (Ext.getCmp('cmbEstado').getValue() != null) ? Ext.getCmp('cmbEstado').getValue() : '';
+
+                                    var cmbReporte = Ext.getCmp('cmbReporte');
+                                    var item = getComboxItem(cmbReporte, 'Id');
+
+                                    fecIniValue = Ext.Date.format(fecIniValue, 'd/m/Y');
+                                    fecFinValue = Ext.Date.format(fecFinValue, 'd/m/Y');
+
+                                    var parametros = "codCanal=" + canalValue + "&codEquipo=" + equipoValue + "&codReporte=" + item.Value + "&codAnio=" + anioValue
+                                    + "&codMes=" + mesValue + "&codPeriodo=" + periodoValue + "&fecIni=" + fecIniValue + "&fecFin=" + fecFinValue + "&codOficina=" + oficinaValue
+                                    + "&codDepartamento=" + departamentoValue + "&codProvincia=" + provinciaValue + "&codSector=" + sectorValue + "&codDistrito=" + distritoValue
+                                    + "&codCadena=" + cadenaValue + "&codPDV=" + codPDVValue + "&codEmpresa=" + empresaValue + "&codCategoria=" + categoriaValue + "&codSubCategoria=" + subCategoriaValue
+                                    + "&codMarca=" + marcaValue + "&codProducto=" + productoValue + "&codPerfil=" + perfilValue + "&codUsuario=" + usuarioValue + "&codEstado=" + estadoValue;
+
+                                    var id_tab = item.Id;
+                                    var title_tab = Capitalize(item.Text);
+                                    var YourTabPanel = Ext.getCmp('mainpanel');
+                                    var TabToCheck = Ext.getCmp(id_tab);
+                                    if (TabToCheck) { //Si ya esta abierto, lo activamos
+                                        //YourTabPanel.setActiveTab(id_tab);
+                                        YourTabPanel.remove(TabToCheck);//lo eliminamos
+                                    } //else { //Si no lo creamos
+                                    YourTabPanel.add({
+                                        icon: '/Content/images/icons/layout.png',
+                                        id: id_tab,
+                                        xtype: 'panel',
+                                        region: 'center',
+                                        title: title_tab,
+                                        plain: true,
+                                        frame: false,
+                                        region: 'center',
+                                        closable: true,
+                                        autoScroll: true,
+                                        layout: 'fit',
+                                        html: '<IFRAME FRAMEBORDER="0" NAME="Ifr" ID="Ifr" src="' + '/Backus/' + title_tab + '?' + parametros + '" STYLE="top:0px; left:0px;width:100%; height:100%;BACKGROUND-COLOR: #FFFFFF;OVERFLOW: visible; position:absolute;" SCROLLING="auto" ></IFRAME>'
+                                    }).show();
+                                    //}
+                                    YourTabPanel.doLayout();
+                                    YourTabPanel.setActiveTab(id_tab);//added
+                                }
+                            }
+                        },
+                        {
+                            xtype: 'button',
+                            text: 'Limpiar',
+                            width: 120,
+                            margin: 5,
+                            listeners: {
+                                click: function () {
+                                    Ext.getCmp('fecIni').setValue(new Date())
+                                    Ext.getCmp('fecFin').setValue(new Date())
+                                    //Ext.getCmp('fecIni').setValue() = '@ViewBag.fechaDia';
+                                    //Ext.getCmp('fecFin').setValue() = '@ViewBag.fechaDia';
+                                    Ext.getCmp('cmbCanal').setValue(null);
+                                    Ext.getCmp('cmbEquipo').setValue(null);
+                                    Ext.getCmp('cmbReporte').setValue(null);
+                                    Ext.getCmp('cmbAnio').setValue(null);
+                                    Ext.getCmp('cmbMes').setValue(null);
+                                    Ext.getCmp('cmbPeriodo').setValue(null);
+                                    Ext.getCmp('cmbOficina').setValue(null);
+                                    Ext.getCmp('cmbDepartamento').setValue(null);
+                                    Ext.getCmp('cmbProvincia').setValue(null);
+                                    Ext.getCmp('cmbSector').setValue(null);
+                                    Ext.getCmp('cmbDistrito').setValue(null);
+                                    Ext.getCmp('cmbCadena').setValue(null);
+                                    Ext.getCmp('txtCodPDV').setValue(null);
+                                    Ext.getCmp('cmbEmpresa').setValue(null);
+                                    Ext.getCmp('cmbCategoria').setValue(null);
+                                    Ext.getCmp('cmbSubCategoria').setValue(null);
+                                    Ext.getCmp('cmbMarca').setValue(null);
+                                    Ext.getCmp('cmbProducto').setValue(null);
+                                    Ext.getCmp('cmbPerfil').setValue(null);
+                                    Ext.getCmp('cmbUsuario').setValue(null);
+                                    Ext.getCmp('cmbEstado').setValue(null);
+                                }
+                            }
+                        },
+                        ],
+                        rootVisible: false,
+                        border: 0,
+                        //width: 200,
+                        autoScroll: true,
+                        //height: 620,
+                        //html:// '<div id="cmbFiltro"></div>',
+                        //listeners: {
+                        //    itemclick: function (selModel, record) {
+                        //        if (record.get('leaf')) {//Si es TRUE = Submenu
+                        //            var id_tab = record.get('id');
+                        //            var title_tab = Capitalize(record.get('text'));
+                        //            var YourTabPanel = Ext.getCmp('mainpanel');
+                        //            var TabToCheck = Ext.getCmp(id_tab);
+                        //            if (TabToCheck) { //Si ya esta abierto, lo activamos
+                        //                YourTabPanel.setActiveTab(id_tab);
+                        //            } else { //Si no lo creamos
+                        //                YourTabPanel.add({
+                        //                    icon: record.get('icon'),
+                        //                    id: id_tab,
+                        //                    xtype: 'panel',
+                        //                    region: 'center',
+                        //                    title: title_tab,
+                        //                    plain: true,
+                        //                    frame: false,
+                        //                    region: 'center',
+                        //                    closable: true,
+                        //                    autoScroll: true,
+                        //                    layout: 'fit',
+                        //                    html: '<IFRAME FRAMEBORDER="0" NAME="Ifr" ID="Ifr" src="' + record.get('hrefTarget') + '" STYLE="top:0px; left:0px;width:100%; height:100%;BACKGROUND-COLOR: #FFFFFF;OVERFLOW: visible; position:absolute;" SCROLLING="auto" ></IFRAME>'
+                        //                }).show();
+                        //            }
+                        //            YourTabPanel.doLayout();
+                        //        }
+                        //    }
+                        //}
+                    }, {
+                        region: 'south',
+                        height: 26,
+                        bbar: new Ext.Toolbar({
+                            id: 'basic-statusbar',
+                            iconCls: 'an-icon',
+                            items: [
+                '->',
+                {
+                    id: 'chkFrmWrkSession',
+                    xtype: 'button',
+                    iconCls: 'x-icon-cerrar-sesion',
+                    text: '<b>Cerrar Sesión</b>',
+                    listeners: {
+                        'click': function (scope, valor) {
+                            confirmarCerrar();
+                        }
+                    }
+                },
+                '<b>Cliente: </b>@ViewBag.Nombre_Cliente',
+            '<b>Usuario: </b>@ViewBag.Nombre_Completo_Usuario',
+			'-',
+			'<b>Fecha:</b> ',
+			Ext.Date.format(new Date(), 'd/n/Y')
+            , '-'
+            , '<b>Hora:</b>',
+			clock
+                            ]
+                        }),
+                        //////////////////////////////////////
+                        listeners: {
+                            render: {
+                                fn: function () {
+                                    Ext.fly(clock.getEl().parent()).addCls('x-status-text-panel').createChild({ cls: 'spacer' });
+                                    Ext.TaskManager.start({
+                                        run: function () {
+                                            Ext.fly(clock.getEl()).update(Ext.Date.format(new Date(), 'g:i:s A'));
+                                        },
+                                        interval: 1000
+                                    });
+                                },
+                                delay: 100
+                            }
+                        }
+                    },
+                        {
+                            region: 'center',
+                            xtype: 'panel', // TabPanel itself has no title
+                            layout: "fit",
+                            border: false,
+                            margins: { bottom: 3, right: 3 },
+                            //activeTab: 0,      // activo por defecto el primer Tab
+                            //html:'Mas informacion del sistema',
+                            items: [{
+                                xtype: "panel",
+                                region: "center",
+                                items: [this.tabs]//<--- dentro de la región central normalmente va el contenido principal, así que poner ahi los tabs tiene mucho sentido.
+                            }]
+                        }]
+            });
+        });
+    </script>
+</head>
+<body>
+</body>
+</html>
