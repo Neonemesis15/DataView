@@ -1,0 +1,150 @@
+﻿.cls_content_cab_ecu_rep
+{
+    padding-top:3px;
+    padding-bottom:3px;
+  /*  background-color:#585858;*/
+  /*background-color:#D0D0D0;*/
+  background-color:#003E86;
+  text-align:right;
+}
+.cls_imgCab_ecu_rep
+{
+    display:inline-block;
+    /*background-color:white;*/
+    
+    vertical-align:middle;
+    border-radius:5px 0px 0px 5px;
+   /* border:solid 2px cyan;*/
+    padding-top:2px;
+    padding-bottom:2px;
+    padding-left:2px;
+}
+.cls_imgCab02_ecu_rep
+{
+    vertical-align:middle;
+    margin-right:10px;
+}
+.cls_cabText_ecu_rep
+{
+ /* color:#6E6E6E;*/
+ color:#fff;
+  font-size:20px;
+  
+  font-weight:bold;
+  /*box-shadow: 2px 2px 5px white;*/
+  text-shadow: 0.1em 0.1em 0.05em #6E6E6E;
+  text-align:right;
+  display:inline-block;
+  position:absolute;
+  left:5px;
+  top:20px;
+}
+/* Inicio Filtros para reporte precios*/
+.cls_precio_tb_filtros .texto
+{
+   font-size:12px;
+   padding:3px;
+   padding-right:10px;
+   text-align:right;
+   font-weight:bold;
+}
+
+/* Fin Filtros para reporte precios*/
+/* Inicio estilos tablas reporte precio */
+.tablehj ,.tablehj td
+{   text-align:left;
+    border-bottom:solid 1px #A4A4A4;
+    border-top:solid 1px #A4A4A4;
+    border-left:solid 1px #A4A4A4;
+    vertical-align:central;
+    padding-left:5px;
+    padding-right:5px;
+}
+.tablehj th
+{
+    border-bottom:solid 1px white;
+    border-top:solid 1px white;
+    border-left:solid 1px ;
+    text-align:left;
+    padding-left:5px;
+    padding-right:5px;
+}
+.cls_txt
+{
+width:50px;
+}
+.tablehj tbody tr:hover
+{
+    background-color:#A4A4A4;
+    color:white;
+}
+.tablehj td:hover
+{
+    background-color:#BDBDBD;
+}
+.tablehj .cls_check
+{
+    display:inline-block;
+    padding:2px;
+    border:solid 2px white;
+    background-color:#A4A4A4;
+}
+.tablehj .cls_check:hover
+{
+    display:inline-block;
+    padding:2px;
+    border:solid 2px #643e3e;
+    background-color:#A4A4A4;
+}
+.tablehj input[type=checkbox]
+{
+    margin:0px;
+}
+.tablehj input[type=text]
+{
+    margin:0px;
+
+    border-radius:2px;
+}
+/* Fin estilos tablas reporte precio */
+.tablehj .btn-link
+{
+    color:white;
+
+}
+.tablehj .btn-link:focus,.tablehj .btn-link:hover {
+  color: white;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+/*
+.tablehj i:hover
+{
+    border:solid 1px white;
+}
+*/
+.tablehj i:hover
+{
+    border:solid 1px white;
+}
+.multiselect_her
+{
+    position:absolute;
+    z-index:1000;
+}
+.ftranspa_black
+{
+   background: -moz-linear-gradient(left, rgba(69,72,77,0.67) 0%, rgba(0,0,0,0.35) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(69,72,77,0.67)), color-stop(100%,rgba(0,0,0,0.35))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(left, rgba(69,72,77,0.67) 0%,rgba(0,0,0,0.35) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(left, rgba(69,72,77,0.67) 0%,rgba(0,0,0,0.35) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(left, rgba(69,72,77,0.67) 0%,rgba(0,0,0,0.35) 100%); /* IE10+ */
+background: linear-gradient(to right, rgba(69,72,77,0.67) 0%,rgba(0,0,0,0.35) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ab45484d', endColorstr='#59000000',GradientType=1 ); /* IE6-9 */
+}
+.ftranspa_black2
+{
+border-top:solid 1px white;
+padding:1px;
+}
